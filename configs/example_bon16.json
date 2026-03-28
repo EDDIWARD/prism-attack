@@ -1,0 +1,17 @@
+{
+  "attack_mode": "bon",
+  "bon_n": 16,
+  "dataset_name": "medmcqa",
+  "num_samples": 10,
+  "start_from": 0,
+  "max_rounds": 6,
+  "model_name": "gpt-4o",
+  "output_dir": "results/example_bon16",
+  "save_summary": true,
+  "save_logs": true,
+  "random_seed": 42,
+  "debater_api": {
+    "api_key": "YOUR_API_KEY",
+    "base_url": "https://api.openai.com/v1"
+  }
+}
