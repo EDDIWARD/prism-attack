@@ -32,7 +32,7 @@ from openai import OpenAI
 from dataloader import get_dataset
 from prompt import agent_prompt, adversary_prompt
 from search_tools import search_web, get_search_log, clear_search_log, register_search_tool
-from trap_manager import select_trap_term, check_trap_term_in_text, format_trap_term_for_prompt
+# from trap_manager import select_trap_term, check_trap_term_in_text, format_trap_term_for_prompt
 
 # NEW: Import config loader for flexible model configuration
 try:
@@ -42,11 +42,11 @@ except ImportError:
     CONFIG_LOADER_AVAILABLE = False
 
 # NEW: Import dynamic trap term generator
-from trap_generator import (
-    generate_trap_terms_for_dataset,
-    get_trap_term_for_sample,
-    format_trap_term_for_prompt as format_generated_trap_term
-)
+# from trap_generator import (
+#     generate_trap_terms_for_dataset,
+#     get_trap_term_for_sample,
+#     format_trap_term_for_prompt as format_generated_trap_term
+# )
 
 # V8 Router import
 try:
@@ -78,10 +78,10 @@ except ImportError:
 
 # NEW: Import unified trap term generator (supports semi-real strategy)
 try:
-    from trap_generator_wrapper import (
-        generate_trap_term_unified,
-        format_trap_term_for_prompt as format_unified_trap_term
-    )
+#     from trap_generator_wrapper import (
+#         generate_trap_term_unified,
+#         format_trap_term_for_prompt as format_unified_trap_term
+#     )
     UNIFIED_GENERATOR_AVAILABLE = True
 except ImportError:
     UNIFIED_GENERATOR_AVAILABLE = False
