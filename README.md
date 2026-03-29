@@ -14,7 +14,7 @@ PRISM is a three-stage attack framework that defeats search-augmented multi-agen
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/prism-attack.git
+git clone https://anonymous.4open.science/r/prism-attack/
 cd prism-attack
 
 # Install dependencies
