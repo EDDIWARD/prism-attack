@@ -8,6 +8,7 @@
   "prism_builder_model": "gpt-4o",
   "use_cached_scout": false,
   "use_cached_builder": false,
+  "disable_trap_generation": true,
   "dataset_name": "medmcqa",
   "num_samples": 10,
   "start_from": 0,
