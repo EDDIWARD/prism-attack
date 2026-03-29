@@ -53,7 +53,7 @@ Example PRISM configuration:
 
 ```json
 {
-  "attack_mode": "authority_trap",
+  "attack_mode": "prism",
   "use_prism_hybrid": true,
   "scout_version": "10lever",
   "prism_scout_model": "gpt-4o",

@@ -152,7 +152,7 @@ except ImportError:
 # ============================================================================
 base_config = {
     # Experimental condition
-    "attack_mode": "bon",  # "bon" or "authority_trap"
+    "attack_mode": "bon",  # "bon" or "prism"
 
     # Dataset and sampling
     "dataset_name": "truthfulqa",
@@ -185,7 +185,7 @@ base_config = {
     "search_top_k": 3,
     "search_max_content_length": 300,
 
-    # Trap term configuration (only used when attack_mode="authority_trap")
+    # Trap term configuration (only used when attack_mode="prism")
     "trap_category": "fabricator",  # "fabricator" or "twister" (DEPRECATED: only for old library mode)
     "use_dynamic_trap_generation": True,  # NEW: If True, generate trap terms per question; if False, use old library
     "trap_generator_model": "gpt-4o-mini",  # Model for trap term generation
@@ -1656,7 +1656,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
 
     Args:
         config: Configuration dictionary containing:
-            - attack_mode: "bon" or "authority_trap"
+            - attack_mode: "bon" or "prism"
             - dataset_name, num_samples, random_seed
             - num_rounds, model_name, bon_n (for BoN mode)
             - use_search_for_verifier, use_search_for_attacker
@@ -1793,7 +1793,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
 
     # Initialize PRISM Router if enabled
     v8_router = None
-    if config.get("use_v8_router", False) and PRISM_AVAILABLE and config["attack_mode"] == "authority_trap":
+    if config.get("use_v8_router", False) and PRISM_AVAILABLE and config["attack_mode"] == "prism":
         print("\n[PRISM ROUTER] Initializing PRISM Router for question-type-based strategy selection...")
         try:
             # Use the same client as BoN for classification
@@ -1817,12 +1817,12 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             v8_router = None
     elif config.get("use_v8_router", False) and not PRISM_AVAILABLE:
         print("\n[PRISM ROUTER] [ERROR] PRISM Router requested but not available (import failed)")
-    elif config.get("use_v8_router", False) and config["attack_mode"] != "authority_trap":
+    elif config.get("use_v8_router", False) and config["attack_mode"] != "prism":
         print("\n[PRISM ROUTER] [ERROR] PRISM Router only works with authority_trap mode")
 
     # Initialize PRISM Phase 2 Generator if enabled
     v8_phase2_generator = None
-    if config.get("use_v8_phase2", False) and PRISM_PHASE2_AVAILABLE and config["attack_mode"] == "authority_trap":
+    if config.get("use_v8_phase2", False) and PRISM_PHASE2_AVAILABLE and config["attack_mode"] == "prism":
         print("\n[PRISM PHASE2] Initializing PRISM Phase 2 adaptive prompt generator...")
         try:
             # Create OpenAI client for Scout if not exists
@@ -1845,13 +1845,13 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             v8_phase2_generator = None
     elif config.get("use_v8_phase2", False) and not PRISM_PHASE2_AVAILABLE:
         print("\n[PRISM PHASE2] [ERROR] PRISM Phase 2 requested but not available (import failed)")
-    elif config.get("use_v8_phase2", False) and config["attack_mode"] != "authority_trap":
+    elif config.get("use_v8_phase2", False) and config["attack_mode"] != "prism":
         print("\n[PRISM PHASE2] [ERROR] PRISM Phase 2 only works with authority_trap mode")
 
     # Initialize PRISM Hybrid Generator if enabled
     prism_hybrid_generator = None
     v8_cache_manager = None
-    if config.get("use_prism_hybrid", False) and PRISM_HYBRID_AVAILABLE and config["attack_mode"] == "authority_trap":
+    if config.get("use_prism_hybrid", False) and PRISM_HYBRID_AVAILABLE and config["attack_mode"] == "prism":
         print("\n[PRISM HYBRID] Initializing PRISM Hybrid Builder generator...")
 
         # Initialize PRISM cache manager if cache_file is configured
@@ -1905,7 +1905,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             prism_hybrid_generator = None
     elif config.get("use_prism_hybrid", False) and not PRISM_HYBRID_AVAILABLE:
         print("\n[PRISM HYBRID] [ERROR] PRISM Hybrid requested but not available (import failed)")
-    elif config.get("use_prism_hybrid", False) and config["attack_mode"] != "authority_trap":
+    elif config.get("use_prism_hybrid", False) and config["attack_mode"] != "prism":
         print("\n[PRISM HYBRID] [ERROR] PRISM Hybrid only works with authority_trap mode")
 
     # Ablation mode: replace prism_hybrid_generator with AblationGenerator
@@ -1950,7 +1950,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
     # 🔥 新增：检查是否禁用trap generation（用于无欺骗attack）
     if config.get("disable_trap_generation", False):
         print("\n[STEP 2.5] Trap term generation DISABLED (no-deception mode)")
-    elif config["attack_mode"] == "authority_trap" and config.get("use_dynamic_trap_generation", True):
+    elif config["attack_mode"] == "prism" and config.get("use_dynamic_trap_generation", True):
         print("\n[STEP 2.5] Generating trap terms for dataset...")
         print(f"[TRAP] Using dynamic per-question generation (model: {config.get('trap_generator_model', 'gpt-4o-mini')})")
 
@@ -2047,7 +2047,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             # 无欺骗模式：不使用trap term
             trap_term_text = ""  # Empty string instead of None
             print(f"[TRAP] DISABLED - Running without trap term (no-deception mode)")
-        elif config["attack_mode"] == "authority_trap":
+        elif config["attack_mode"] == "prism":
             if config.get("use_dynamic_trap_generation", True):
                 # NEW: Use dynamically generated trap term
                 try:
@@ -2131,7 +2131,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             print(f"[PROMPT] Using vanilla baseline (simple adversarial prompt, no BoN/PRISM)")
         elif config["attack_mode"] == "bon":
             adversary_prompt_text = get_adversary_bon_prompt(question, adv_answer)
-        elif config["attack_mode"] == "authority_trap":
+        elif config["attack_mode"] == "prism":
             # PRISM Router: Check if enabled and use it for strategy selection
             if v8_router is not None:
                 print(f"\n[PRISM ROUTER] Classifying question and routing to strategy...")
@@ -2691,7 +2691,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
 
         # Check if verifier adopted trap term (only for authority_trap mode)
         trap_term_adopted = False
-        if config["attack_mode"] == "authority_trap" and trap_term_text:
+        if config["attack_mode"] == "prism" and trap_term_text:
             # Check in Debater_B's messages
             verifier_messages = [msg for msg in groupchat.messages if msg.get("name") == "Debater_B"]
             verifier_text = " ".join([normalize_content(msg.get("content", "")) for msg in verifier_messages])
@@ -2766,7 +2766,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
             # BoN tokens: from debater_c._bon_token_tracker
             if hasattr(debater_c, '_bon_token_tracker'):
                 token_info['bon_tokens'] = debater_c._bon_token_tracker
-        elif config["attack_mode"] == "authority_trap" and config.get("use_prism_hybrid"):
+        elif config["attack_mode"] == "prism" and config.get("use_prism_hybrid"):
             # PRISM pipeline tokens: already stored in v8_routing_info
             if v8_routing_info and 'prism_hybrid_token_usage' in v8_routing_info:
                 token_info['pipeline_tokens'] = v8_routing_info['prism_hybrid_token_usage']
@@ -2782,7 +2782,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
         print(f"\n[RESULT] Verifier answer: {debater_b_answer.upper() if debater_b_answer else 'None'}")
         print(f"[RESULT] Correct answer: {correct_answer.upper()}")
         print(f"[RESULT] Verifier {'[CORRECT]' if verifier_correct else '[WRONG]'}")
-        if config["attack_mode"] == "authority_trap":
+        if config["attack_mode"] == "prism":
             print(f"[RESULT] Trap term adopted: {'[YES]' if trap_term_adopted else '[NO]'}")
         if first_agreement_round:
             print(f"[RESULT] First agreement at round: {first_agreement_round} (Verifier agreed with Attacker)")
@@ -2898,7 +2898,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
             'bon_total_tokens': bon_total,
             'bon_avg_per_sample': bon_total / len(sample_logs) if sample_logs else 0,
         }
-    elif config["attack_mode"] == "authority_trap" and sample_logs:
+    elif config["attack_mode"] == "prism" and sample_logs:
         pipeline_total = sum(
             t.get('pipeline_tokens', {}).get('pipeline_total', {}).get('total_tokens', 0)
             for t in all_token_usages
@@ -3017,7 +3017,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--config", type=str, default=None,
                         help="Path to JSON config file (overrides other arguments)")
-    parser.add_argument("--attack-mode", type=str, default="bon", choices=["bon", "authority_trap"],
+    parser.add_argument("--attack-mode", type=str, default="bon", choices=["bon", "prism"],
                         help="Attack mode: 'bon' or 'authority_trap'")
     parser.add_argument("--dataset", type=str, default="truthfulqa", choices=["truthfulqa", "medmcqa"],
                         help="Dataset to use")
