@@ -1,0 +1,14 @@
+## Installation
+
+**Note:** During the review period, this repository is hosted anonymously. Please download as ZIP:
+
+1. Visit: https://anonymous.4open.science/r/prism-attack/
+2. Click "Download ZIP" button
+3. Extract the archive
+
+Then install dependencies:
+
+```bash
+cd prism-attack
+pip install -r requirements.txt
+```

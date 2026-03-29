@@ -54,10 +54,10 @@ Example PRISM configuration:
 ```json
 {
   "attack_mode": "authority_trap",
-  "use_v8_hybrid": true,
+  "use_prism_hybrid": true,
   "scout_version": "10lever",
-  "v8_scout_model": "gpt-4o",
-  "v8_builder_model": "gpt-4o",
+  "prism_scout_model": "gpt-4o",
+  "prism_builder_model": "gpt-4o",
   "dataset_name": "medmcqa",
   "num_samples": 100,
   "model_name": "gpt-4o",

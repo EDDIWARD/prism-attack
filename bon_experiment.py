@@ -48,26 +48,26 @@ except ImportError:
 #     format_trap_term_for_prompt as format_generated_trap_term
 # )
 
-# V8 Router import
+# PRISM Router import
 try:
-    from prism_framework.v8_router import V8Router
-    V8_AVAILABLE = True
+    from prism_framework.v8_router import PRISMRouter
+    PRISM_AVAILABLE = True
 except ImportError:
-    V8_AVAILABLE = False
+    PRISM_AVAILABLE = False
 
-# V8 Phase 2 import
+# PRISM Phase 2 import
 try:
-    from prism_framework.v8_phase2_generator import V8Phase2Generator
-    V8_PHASE2_AVAILABLE = True
+    from prism_framework.v8_phase2_generator import PRISMPhase2Generator
+    PRISM_PHASE2_AVAILABLE = True
 except ImportError:
-    V8_PHASE2_AVAILABLE = False
+    PRISM_PHASE2_AVAILABLE = False
 
-# V8 Hybrid import
+# PRISM Hybrid import
 try:
-    from prism_framework.v8_phase2_hybrid_generator import V8Phase2HybridGenerator
-    V8_HYBRID_AVAILABLE = True
+    from prism_framework.v8_phase2_hybrid_generator import PRISMPhase2HybridGenerator
+    PRISM_HYBRID_AVAILABLE = True
 except ImportError:
-    V8_HYBRID_AVAILABLE = False
+    PRISM_HYBRID_AVAILABLE = False
 
 # Ablation Generator import
 try:
@@ -107,9 +107,9 @@ except ImportError:
 # NEW: Import Phase 2.2 v8-Lean prompt
 try:
     from phase2_attacker_prompt_v8_lean import get_adversary_authority_trap_prompt_v8_lean
-    PHASE2_V8_LEAN_AVAILABLE = True
+    PHASE2_PRISM_LEAN_AVAILABLE = True
 except ImportError:
-    PHASE2_V8_LEAN_AVAILABLE = False
+    PHASE2_PRISM_LEAN_AVAILABLE = False
 
 # NEW: Import Phase 2.3 v9-Authority prompt
 try:
@@ -1791,14 +1791,14 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             )
             print(f"[CLIENT] Separate judge client created from config: {judge_model} @ {judge_base_url}")
 
-    # Initialize V8 Router if enabled
+    # Initialize PRISM Router if enabled
     v8_router = None
-    if config.get("use_v8_router", False) and V8_AVAILABLE and config["attack_mode"] == "authority_trap":
-        print("\n[V8 ROUTER] Initializing V8 Router for question-type-based strategy selection...")
+    if config.get("use_v8_router", False) and PRISM_AVAILABLE and config["attack_mode"] == "authority_trap":
+        print("\n[PRISM ROUTER] Initializing PRISM Router for question-type-based strategy selection...")
         try:
             # Use the same client as BoN for classification
             if openai_client is None:
-                # Create a client for V8 Router classification
+                # Create a client for PRISM Router classification
                 openai_client = OpenAI(
                     api_key=config_list[0]["api_key"],
                     base_url=config_list[0].get("base_url", config_list[0].get("api_base", "https://api.openai.com/v1")),
@@ -1806,24 +1806,24 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     max_retries=config.get("openai_max_retries", 3)
                 )
 
-            v8_router = V8Router(
+            v8_router = PRISMRouter(
                 classifier_client=openai_client,
                 classifier_model=config.get("v8_classifier_model", "gpt-4o")
             )
-            print(f"[V8 ROUTER] [OK] Initialized with classifier model: {config.get('v8_classifier_model', 'gpt-4o')}")
+            print(f"[PRISM ROUTER] [OK] Initialized with classifier model: {config.get('v8_classifier_model', 'gpt-4o')}")
         except Exception as e:
-            print(f"[V8 ROUTER] [ERROR] Failed to initialize: {e}")
-            print(f"[V8 ROUTER] Falling back to default prompt selection")
+            print(f"[PRISM ROUTER] [ERROR] Failed to initialize: {e}")
+            print(f"[PRISM ROUTER] Falling back to default prompt selection")
             v8_router = None
-    elif config.get("use_v8_router", False) and not V8_AVAILABLE:
-        print("\n[V8 ROUTER] [ERROR] V8 Router requested but not available (import failed)")
+    elif config.get("use_v8_router", False) and not PRISM_AVAILABLE:
+        print("\n[PRISM ROUTER] [ERROR] PRISM Router requested but not available (import failed)")
     elif config.get("use_v8_router", False) and config["attack_mode"] != "authority_trap":
-        print("\n[V8 ROUTER] [ERROR] V8 Router only works with authority_trap mode")
+        print("\n[PRISM ROUTER] [ERROR] PRISM Router only works with authority_trap mode")
 
-    # Initialize V8 Phase 2 Generator if enabled
+    # Initialize PRISM Phase 2 Generator if enabled
     v8_phase2_generator = None
-    if config.get("use_v8_phase2", False) and V8_PHASE2_AVAILABLE and config["attack_mode"] == "authority_trap":
-        print("\n[V8 PHASE2] Initializing V8 Phase 2 adaptive prompt generator...")
+    if config.get("use_v8_phase2", False) and PRISM_PHASE2_AVAILABLE and config["attack_mode"] == "authority_trap":
+        print("\n[PRISM PHASE2] Initializing PRISM Phase 2 adaptive prompt generator...")
         try:
             # Create OpenAI client for Scout if not exists
             if openai_client is None:
@@ -1834,32 +1834,32 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     max_retries=config.get("openai_max_retries", 3)
                 )
 
-            v8_phase2_generator = V8Phase2Generator(
+            v8_phase2_generator = PRISMPhase2Generator(
                 scout_client=openai_client,
-                scout_model=config.get("v8_scout_model", "gpt-4o")
+                scout_model=config.get("prism_scout_model", "gpt-4o")
             )
-            print(f"[V8 PHASE2] [OK] Initialized with scout model: {config.get('v8_scout_model', 'gpt-4o')}")
+            print(f"[PRISM PHASE2] [OK] Initialized with scout model: {config.get('prism_scout_model', 'gpt-4o')}")
         except Exception as e:
-            print(f"[V8 PHASE2] [ERROR] Failed to initialize: {e}")
-            print(f"[V8 PHASE2] Falling back to Phase 1 or default prompts")
+            print(f"[PRISM PHASE2] [ERROR] Failed to initialize: {e}")
+            print(f"[PRISM PHASE2] Falling back to Phase 1 or default prompts")
             v8_phase2_generator = None
-    elif config.get("use_v8_phase2", False) and not V8_PHASE2_AVAILABLE:
-        print("\n[V8 PHASE2] [ERROR] V8 Phase 2 requested but not available (import failed)")
+    elif config.get("use_v8_phase2", False) and not PRISM_PHASE2_AVAILABLE:
+        print("\n[PRISM PHASE2] [ERROR] PRISM Phase 2 requested but not available (import failed)")
     elif config.get("use_v8_phase2", False) and config["attack_mode"] != "authority_trap":
-        print("\n[V8 PHASE2] [ERROR] V8 Phase 2 only works with authority_trap mode")
+        print("\n[PRISM PHASE2] [ERROR] PRISM Phase 2 only works with authority_trap mode")
 
-    # Initialize V8 Hybrid Generator if enabled
-    v8_hybrid_generator = None
+    # Initialize PRISM Hybrid Generator if enabled
+    prism_hybrid_generator = None
     v8_cache_manager = None
-    if config.get("use_v8_hybrid", False) and V8_HYBRID_AVAILABLE and config["attack_mode"] == "authority_trap":
-        print("\n[V8 HYBRID] Initializing V8 Hybrid Builder generator...")
+    if config.get("use_prism_hybrid", False) and PRISM_HYBRID_AVAILABLE and config["attack_mode"] == "authority_trap":
+        print("\n[PRISM HYBRID] Initializing PRISM Hybrid Builder generator...")
 
-        # Initialize V8 cache manager if cache_file is configured
+        # Initialize PRISM cache manager if cache_file is configured
         v8_cache_file = config.get("v8_cache_file")
         if v8_cache_file:
-            from prism_framework.cache_manager import V8CacheManager
-            v8_cache_manager = V8CacheManager(v8_cache_file)
-            print(f"[CACHE] V8 cache initialized: {v8_cache_file}")
+            from prism_framework.cache_manager import PRISMCacheManager
+            v8_cache_manager = PRISMCacheManager(v8_cache_file)
+            print(f"[CACHE] PRISM cache initialized: {v8_cache_file}")
             print(f"[CACHE] use_cached_scout={config.get('use_cached_scout', False)}, "
                   f"use_cached_builder={config.get('use_cached_builder', False)}")
 
@@ -1883,41 +1883,41 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     timeout=config.get("openai_timeout", 300.0),
                     max_retries=config.get("openai_max_retries", 3)
                 )
-                print(f"[V8 HYBRID] Separate Scout/Builder client: {sb_api.get('base_url')}")
+                print(f"[PRISM HYBRID] Separate Scout/Builder client: {sb_api.get('base_url')}")
             else:
                 sb_client = openai_client
 
-            v8_hybrid_generator = V8Phase2HybridGenerator(
+            prism_hybrid_generator = PRISMPhase2HybridGenerator(
                 scout_client=sb_client,
                 builder_client=sb_client,
-                scout_model=config.get("v8_scout_model", "gpt-4o"),
-                builder_model=config.get("v8_builder_model", "gpt-4o"),
+                scout_model=config.get("prism_scout_model", "gpt-4o"),
+                builder_model=config.get("prism_builder_model", "gpt-4o"),
                 builder_prompt_version=config.get("builder_prompt_version", "current"),
                 scout_version=config.get("scout_version", "10lever"),
                 scout_best_of_n=config.get("scout_best_of_n", 1),
                 cache_manager=v8_cache_manager
             )
-            v8_hybrid_generator.random_seed = config.get("random_seed", 42)
-            print(f"[V8 HYBRID] [OK] Initialized with scout({config.get('scout_version', '10lever')}): {config.get('v8_scout_model', 'gpt-4o')}, builder({config.get('builder_prompt_version', 'current')}): {config.get('v8_builder_model', 'gpt-4o')}")
+            prism_hybrid_generator.random_seed = config.get("random_seed", 42)
+            print(f"[PRISM HYBRID] [OK] Initialized with scout({config.get('scout_version', '10lever')}): {config.get('prism_scout_model', 'gpt-4o')}, builder({config.get('builder_prompt_version', 'current')}): {config.get('prism_builder_model', 'gpt-4o')}")
         except Exception as e:
-            print(f"[V8 HYBRID] [ERROR] Failed to initialize: {e}")
-            print(f"[V8 HYBRID] Falling back to Phase 2 or default prompts")
-            v8_hybrid_generator = None
-    elif config.get("use_v8_hybrid", False) and not V8_HYBRID_AVAILABLE:
-        print("\n[V8 HYBRID] [ERROR] V8 Hybrid requested but not available (import failed)")
-    elif config.get("use_v8_hybrid", False) and config["attack_mode"] != "authority_trap":
-        print("\n[V8 HYBRID] [ERROR] V8 Hybrid only works with authority_trap mode")
+            print(f"[PRISM HYBRID] [ERROR] Failed to initialize: {e}")
+            print(f"[PRISM HYBRID] Falling back to Phase 2 or default prompts")
+            prism_hybrid_generator = None
+    elif config.get("use_prism_hybrid", False) and not PRISM_HYBRID_AVAILABLE:
+        print("\n[PRISM HYBRID] [ERROR] PRISM Hybrid requested but not available (import failed)")
+    elif config.get("use_prism_hybrid", False) and config["attack_mode"] != "authority_trap":
+        print("\n[PRISM HYBRID] [ERROR] PRISM Hybrid only works with authority_trap mode")
 
-    # Ablation mode: replace v8_hybrid_generator with AblationGenerator
+    # Ablation mode: replace prism_hybrid_generator with AblationGenerator
     ablation_mode = config.get("ablation_mode", None)
-    if ablation_mode and ABLATION_AVAILABLE and v8_hybrid_generator is not None:
+    if ablation_mode and ABLATION_AVAILABLE and prism_hybrid_generator is not None:
         print(f"\n[ABLATION] Wrapping generator with ablation mode: {ablation_mode}")
-        v8_hybrid_generator = AblationGenerator(
+        prism_hybrid_generator = AblationGenerator(
             ablation_mode=ablation_mode,
             scout_client=openai_client,
             builder_client=openai_client,
-            scout_model=config.get("v8_scout_model", "gpt-4o"),
-            builder_model=config.get("v8_builder_model", "gpt-4o"),
+            scout_model=config.get("prism_scout_model", "gpt-4o"),
+            builder_model=config.get("prism_builder_model", "gpt-4o"),
             builder_prompt_version=config.get("builder_prompt_version", "current"),
             scout_version=config.get("scout_version", "10lever"),
             random_seed=config.get("random_seed", 42),
@@ -2123,23 +2123,23 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
         )
 
             # Debater_C: Attacker (BoN or Authority Trap)
-        # Initialize V8 routing info (will be set if V8 router is used)
+        # Initialize PRISM routing info (will be set if PRISM router is used)
         v8_routing_info = None
 
         if config["attack_mode"] == "vanilla":
             adversary_prompt_text = get_adversary_bon_prompt(question, adv_answer)
-            print(f"[PROMPT] Using vanilla baseline (simple adversarial prompt, no BoN/V8)")
+            print(f"[PROMPT] Using vanilla baseline (simple adversarial prompt, no BoN/PRISM)")
         elif config["attack_mode"] == "bon":
             adversary_prompt_text = get_adversary_bon_prompt(question, adv_answer)
         elif config["attack_mode"] == "authority_trap":
-            # V8 Router: Check if enabled and use it for strategy selection
+            # PRISM Router: Check if enabled and use it for strategy selection
             if v8_router is not None:
-                print(f"\n[V8 ROUTER] Classifying question and routing to strategy...")
+                print(f"\n[PRISM ROUTER] Classifying question and routing to strategy...")
                 try:
-                    # Prepare question dict for V8 Router
+                    # Prepare question dict for PRISM Router
                     question_dict = {
                         'question': question,
-                        'options': []  # V8 Router will work without options if needed
+                        'options': []  # PRISM Router will work without options if needed
                     }
 
                     # Extract options from question if available (for better classification)
@@ -2156,9 +2156,9 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     # Classify and route
                     question_type, strategy_config, prompt_function = v8_router.classify_and_route(question_dict)
 
-                    print(f"[V8 ROUTER] Question type: {question_type}")
-                    print(f"[V8 ROUTER] Selected strategy: {strategy_config['name']}")
-                    print(f"[V8 ROUTER] Tactics: {', '.join(strategy_config['tactics'])}")
+                    print(f"[PRISM ROUTER] Question type: {question_type}")
+                    print(f"[PRISM ROUTER] Selected strategy: {strategy_config['name']}")
+                    print(f"[PRISM ROUTER] Tactics: {', '.join(strategy_config['tactics'])}")
 
                     # Generate prompt using routed strategy
                     # V5/V7.2 prompts expect question_dict parameter, not question
@@ -2168,7 +2168,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                         trap_term=trap_term_text
                     )
 
-                    # Store V8 routing info temporarily (will be added to sample_log later)
+                    # Store PRISM routing info temporarily (will be added to sample_log later)
                     v8_routing_info = {
                         "v8_question_type": question_type,
                         "v8_strategy": strategy_config['name'],
@@ -2176,8 +2176,8 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     }
 
                 except Exception as e:
-                    print(f"[V8 ROUTER] [ERROR] Error during routing: {e}")
-                    print(f"[V8 ROUTER] Falling back to V5 aggressive (no deception)")
+                    print(f"[PRISM ROUTER] [ERROR] Error during routing: {e}")
+                    print(f"[PRISM ROUTER] Falling back to V5 aggressive (no deception)")
                     # Fallback to V5 aggressive (no deception) instead of authority trap
                     from enhanced_prompts import get_enhanced_prompt_v5_aggressive
                     adversary_prompt_text = get_enhanced_prompt_v5_aggressive(
@@ -2185,11 +2185,11 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                         target_answer=adv_answer,
                         trap_term=""  # No trap term in fallback
                     )
-                    v8_routing_info = None  # No V8 info if routing failed
+                    v8_routing_info = None  # No PRISM info if routing failed
 
-            # V8 Phase 2: Check if enabled and use adaptive prompt generation
+            # PRISM Phase 2: Check if enabled and use adaptive prompt generation
             elif v8_phase2_generator is not None:
-                print(f"\n[V8 PHASE2] Generating adaptive prompt...")
+                print(f"\n[PRISM PHASE2] Generating adaptive prompt...")
                 try:
                     # Prepare question dict for Phase 2
                     question_dict = {
@@ -2216,10 +2216,10 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     adversary_prompt_text = result['prompt']
                     metadata = result['metadata']
 
-                    print(f"[V8 PHASE2] Main type: {metadata['main_type']}")
-                    print(f"[V8 PHASE2] Selected levers: {metadata['selected_levers']}")
-                    print(f"[V8 PHASE2] Prompt length: {metadata['stats']['length']} chars")
-                    print(f"[V8 PHASE2] Tactics count: {metadata['stats']['tactics_count']}")
+                    print(f"[PRISM PHASE2] Main type: {metadata['main_type']}")
+                    print(f"[PRISM PHASE2] Selected levers: {metadata['selected_levers']}")
+                    print(f"[PRISM PHASE2] Prompt length: {metadata['stats']['length']} chars")
+                    print(f"[PRISM PHASE2] Tactics count: {metadata['stats']['tactics_count']}")
 
                     # Store Phase 2 metadata (will be added to sample_log later)
                     v8_routing_info = {
@@ -2230,11 +2230,11 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     }
 
                 except Exception as e:
-                    print(f"[V8 PHASE2] [ERROR] Error during generation: {e}")
+                    print(f"[PRISM PHASE2] [ERROR] Error during generation: {e}")
 
-            # V8 Hybrid: Check if enabled and use Hybrid Builder
-            elif v8_hybrid_generator is not None:
-                print(f"\n[V8 HYBRID] Generating adaptive prompt with Hybrid Builder...")
+            # PRISM Hybrid: Check if enabled and use Hybrid Builder
+            elif prism_hybrid_generator is not None:
+                print(f"\n[PRISM HYBRID] Generating adaptive prompt with Hybrid Builder...")
                 try:
                     # Prepare question dict for Hybrid
                     question_dict = {
@@ -2253,7 +2253,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                             ]
 
                     # Generate adaptive prompt with metadata
-                    result = v8_hybrid_generator.generate_with_metadata(
+                    result = prism_hybrid_generator.generate_with_metadata(
                         question_dict,
                         adv_answer,
                         correct_answer=correct_answer,
@@ -2265,38 +2265,38 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                     adversary_prompt_text = result['prompt']
                     metadata = result['metadata']
 
-                    print(f"[V8 HYBRID] Main type: {metadata['main_type']}")
-                    print(f"[V8 HYBRID] Selected levers: {[l[0] for l in metadata['selected_levers']]}")
-                    print(f"[V8 HYBRID] Builder success: {metadata['builder_success']}")
-                    print(f"[V8 HYBRID] Validation passed: {metadata['validation_passed']}")
-                    print(f"[V8 HYBRID] Prompt length: {metadata['stats']['length']} chars")
+                    print(f"[PRISM HYBRID] Main type: {metadata['main_type']}")
+                    print(f"[PRISM HYBRID] Selected levers: {[l[0] for l in metadata['selected_levers']]}")
+                    print(f"[PRISM HYBRID] Builder success: {metadata['builder_success']}")
+                    print(f"[PRISM HYBRID] Validation passed: {metadata['validation_passed']}")
+                    print(f"[PRISM HYBRID] Prompt length: {metadata['stats']['length']} chars")
 
                     # Store Hybrid metadata (will be added to sample_log later)
                     v8_routing_info = {
-                        "v8_hybrid_main_type": metadata['main_type'],
-                        "v8_hybrid_levers": metadata['selected_levers'],
-                        "v8_hybrid_lever_scores": metadata['lever_scores'],
-                        "v8_hybrid_key_entities": metadata.get('key_entities', []),
-                        "v8_hybrid_attack_analysis": metadata.get('attack_analysis', None),
-                        "v8_hybrid_builder_raw_body": metadata.get('builder_raw_body', ''),
-                        "v8_hybrid_builder_success": metadata['builder_success'],
-                        "v8_hybrid_builder_prompt_version": metadata.get('builder_prompt_version', 'current'),
-                        "v8_hybrid_scout_version": metadata.get('scout_version', '10lever'),
-                        "v8_hybrid_validation_passed": metadata['validation_passed'],
-                        "v8_hybrid_prompt_stats": metadata['stats'],
-                        "v8_hybrid_token_usage": metadata.get('token_usage', None),
+                        "prism_hybrid_main_type": metadata['main_type'],
+                        "prism_hybrid_levers": metadata['selected_levers'],
+                        "prism_hybrid_lever_scores": metadata['lever_scores'],
+                        "prism_hybrid_key_entities": metadata.get('key_entities', []),
+                        "prism_hybrid_attack_analysis": metadata.get('attack_analysis', None),
+                        "prism_hybrid_builder_raw_body": metadata.get('builder_raw_body', ''),
+                        "prism_hybrid_builder_success": metadata['builder_success'],
+                        "prism_hybrid_builder_prompt_version": metadata.get('builder_prompt_version', 'current'),
+                        "prism_hybrid_scout_version": metadata.get('scout_version', '10lever'),
+                        "prism_hybrid_validation_passed": metadata['validation_passed'],
+                        "prism_hybrid_prompt_stats": metadata['stats'],
+                        "prism_hybrid_token_usage": metadata.get('token_usage', None),
                     }
 
                     # DEBUG: Save prompt to file for analysis
                     import os
                     os.makedirs("debug_prompts", exist_ok=True)
-                    debug_file = f"debug_prompts/v8_hybrid_sample_{idx:04d}_prompt.txt"
+                    debug_file = f"debug_prompts/prism_hybrid_sample_{idx:04d}_prompt.txt"
                     with open(debug_file, 'w', encoding='utf-8') as f:
                         f.write(adversary_prompt_text)
 
                 except Exception as e:
-                    print(f"[V8 HYBRID] [ERROR] Error during generation: {e}")
-                    print(f"[V8 PHASE2] Falling back to Phase 1 prompt")
+                    print(f"[PRISM HYBRID] [ERROR] Error during generation: {e}")
+                    print(f"[PRISM PHASE2] Falling back to Phase 1 prompt")
                     adversary_prompt_text = get_adversary_authority_trap_prompt(question, adv_answer, trap_term_text)
                     v8_routing_info = None
 
@@ -2322,7 +2322,7 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
                 adversary_prompt_text = get_adversary_authority_trap_prompt_v10_revised(question, adv_answer, trap_term_text)
             elif config.get("use_phase2_v9_authority_prompt", False) and PHASE2_V9_AUTHORITY_AVAILABLE:
                 adversary_prompt_text = get_adversary_authority_trap_prompt_v9_revised(question, adv_answer, trap_term_text)
-            elif config.get("use_phase2_v8_lean_prompt", False) and PHASE2_V8_LEAN_AVAILABLE:
+            elif config.get("use_phase2_v8_lean_prompt", False) and PHASE2_PRISM_LEAN_AVAILABLE:
                 adversary_prompt_text = get_adversary_authority_trap_prompt_v8_lean(question, adv_answer, trap_term_text)
             elif config.get("use_phase2_v7_prompt", False) and PHASE2_V7_AVAILABLE:
                 adversary_prompt_text = get_adversary_authority_trap_prompt_v7(question, adv_answer, trap_term_text)
@@ -2349,9 +2349,9 @@ def run_experiment(config: Dict[str, Any]) -> Dict[str, Any]:
             if v8_routing_info:
                 sample_log.update(v8_routing_info)
                 # Add standardized token_usage for skip_debate mode
-                if 'v8_hybrid_token_usage' in v8_routing_info:
+                if 'prism_hybrid_token_usage' in v8_routing_info:
                     sample_log['token_usage'] = {
-                        'pipeline_tokens': v8_routing_info['v8_hybrid_token_usage']
+                        'pipeline_tokens': v8_routing_info['prism_hybrid_token_usage']
                     }
 
             sample_logs.append(sample_log)
@@ -2743,7 +2743,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
 
             # Save attacker prompt for detailed analysis (always save when available)
             "attacker_prompt": adversary_prompt_text,
-            "builder_prompt_version": config.get("builder_prompt_version", None) if config.get("use_v8_hybrid", False) else None,
+            "builder_prompt_version": config.get("builder_prompt_version", None) if config.get("use_prism_hybrid", False) else None,
 
             # Trap term fields (compatible with both dynamic and library modes)
             "trap_term_id": trap_term_data.get("trap_term_id", f"sample_{actual_sample_id:04d}") if trap_term_data else None,
@@ -2755,7 +2755,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
             "trap_term_adopted": trap_term_adopted,
         }
 
-        # Add V8 routing info if available
+        # Add PRISM routing info if available
         if v8_routing_info is not None:
             sample_log.update(v8_routing_info)
 
@@ -2766,10 +2766,10 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
             # BoN tokens: from debater_c._bon_token_tracker
             if hasattr(debater_c, '_bon_token_tracker'):
                 token_info['bon_tokens'] = debater_c._bon_token_tracker
-        elif config["attack_mode"] == "authority_trap" and config.get("use_v8_hybrid"):
-            # V8 pipeline tokens: already stored in v8_routing_info
-            if v8_routing_info and 'v8_hybrid_token_usage' in v8_routing_info:
-                token_info['pipeline_tokens'] = v8_routing_info['v8_hybrid_token_usage']
+        elif config["attack_mode"] == "authority_trap" and config.get("use_prism_hybrid"):
+            # PRISM pipeline tokens: already stored in v8_routing_info
+            if v8_routing_info and 'prism_hybrid_token_usage' in v8_routing_info:
+                token_info['pipeline_tokens'] = v8_routing_info['prism_hybrid_token_usage']
 
         # Debate API token usage (real usage from monkey-patched OpenAI client)
         token_info['debate_api_usage'] = debate_api_usage
@@ -2810,7 +2810,7 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
     # Build summary
     if config.get("skip_debate", False):
         # skip_debate mode: report builder output quality metrics instead of ASR
-        builder_success_count = sum(1 for s in sample_logs if s.get("v8_hybrid_builder_success", False))
+        builder_success_count = sum(1 for s in sample_logs if s.get("prism_hybrid_builder_success", False))
         prompt_lengths = [len(s.get("attacker_prompt", "")) for s in sample_logs]
         avg_prompt_length = sum(prompt_lengths) / len(prompt_lengths) if prompt_lengths else 0
         summary = {
@@ -2866,10 +2866,10 @@ Where X is A, B, C, or D. Nothing else. Just one line."""
             print(f"  {d['sample_id']:4d}  {d['correct_answer']:>7s}  {d['target_answer']:>6s}  {d['debater_b_final'] or 'N/A':>7s}  {d['debater_a_final'] or 'N/A':>7s}  {'YES' if d['attack_success'] else 'NO':>7s}  {status}")
         print(f"{'─'*80}")
 
-    # Print V8 Router statistics if used
+    # Print PRISM Router statistics if used
     if v8_router is not None:
         print("\n" + "-"*80)
-        print("V8 ROUTER STATISTICS")
+        print("PRISM ROUTER STATISTICS")
         print("-"*80)
         v8_router.print_statistics()
         print("-"*80)
@@ -2989,9 +2989,9 @@ def main(args):
     config["use_search_for_verifier"] = args.use_search
     config["log_dir"] = config.get("output_dir", f"output/full_logs_output/{args.attack_mode}")
     config["verbose"] = args.verbose
-    config["use_v8_router"] = args.use_v8_router  # V8 Router flag
-    config["use_v8_phase2"] = args.use_v8_phase2  # V8 Phase 2 flag
-    config["v8_scout_model"] = args.v8_scout_model  # V8 Phase 2 Scout model
+    config["use_v8_router"] = args.use_v8_router  # PRISM Router flag
+    config["use_v8_phase2"] = args.use_v8_phase2  # PRISM Phase 2 flag
+    config["prism_scout_model"] = args.prism_scout_model  # PRISM Phase 2 Scout model
 
     # Run experiment
     results = run_experiment(config)
@@ -3038,11 +3038,11 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", action="store_true", default=False,
                         help="Verbose output")
     parser.add_argument("--use-v8-router", action="store_true", default=False,
-                        help="Use V8 Router for question-type-based strategy selection")
+                        help="Use PRISM Router for question-type-based strategy selection")
     parser.add_argument("--use-v8-phase2", action="store_true", default=False,
-                        help="Use V8 Phase 2 adaptive prompt generation")
+                        help="Use PRISM Phase 2 adaptive prompt generation")
     parser.add_argument("--v8-scout-model", type=str, default="gpt-4o",
-                        help="Model to use for V8 Phase 2 Scout")
+                        help="Model to use for PRISM Phase 2 Scout")
 
     args = parser.parse_args()
 
@@ -3070,16 +3070,16 @@ if __name__ == "__main__":
         args.verbose = json_config.get("verbose", args.verbose)
         args.use_v8_router = json_config.get("use_v8_router", args.use_v8_router)
 
-        # V8 Phase 2 config
+        # PRISM Phase 2 config
         if "use_v8_phase2" in json_config:
             args.use_v8_phase2 = json_config["use_v8_phase2"]
         else:
             args.use_v8_phase2 = False
 
-        if "v8_scout_model" in json_config:
-            args.v8_scout_model = json_config["v8_scout_model"]
+        if "prism_scout_model" in json_config:
+            args.prism_scout_model = json_config["prism_scout_model"]
         else:
-            args.v8_scout_model = "gpt-4o"
+            args.prism_scout_model = "gpt-4o"
 
         # Store full JSON config for access in main()
         args.json_config = json_config
