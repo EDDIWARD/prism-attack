@@ -5,3 +5,10 @@ results/
 cache/
 *.json.bak
 .DS_Store
+
+# Local configs with real API keys (do not commit)
+configs/local_*.json
+
+# Debate logs contain complete adversarial system prompts, which the paper
+# states are withheld to reduce misuse risk. Do not commit them.
+output/

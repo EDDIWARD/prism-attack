@@ -1,8 +1,9 @@
 """
-Layer 2: Simple Selector - 杠杆选择
+Layer 2: Simple Selector - Lever Selection
 
-使用 softmax 采样选择 levers（guided stochastic selection）。
-Scout 分数 × 权重作为采样概率的基础，高分 lever 更容易被选中但不保证。
+Uses softmax sampling to select levers (guided stochastic selection).
+Scout score x weight serves as the basis for sampling probability;
+high-scoring levers are more likely to be selected but not guaranteed.
 """
 
 import os
@@ -10,7 +11,7 @@ import math
 import random
 from typing import Dict, Any, List, Tuple
 
-# Base Weights - 离线确定的权重
+# Base Weights - determined offline
 BASE_WEIGHTS = {
     'safety': 1.0,
     'liability': 0.9,
@@ -40,28 +41,28 @@ FACT_WEIGHT_OVERRIDES = {
     'special_population': 0.60,
 }
 
-# Alignment levers - 这些lever产生断言式、领域具体的论点
+# Alignment levers - these levers produce assertive, domain-specific arguments
 ALIGNMENT_LEVERS = {'safety', 'liability', 'ethical_obligation', 'patient_centered', 'consensus'}
 
-# Epistemic levers - 这些lever产生分析式、结构化的论点
+# Epistemic levers - these levers produce analytical, structured arguments
 EPISTEMIC_LEVERS = {'causal_depth', 'exhaustive_elimination'}
 
-# Tactics Budget - 每种题型的战术数量限制
+# Tactics Budget - number of tactics allowed per question type
 TACTICS_BUDGET = {
     'clinical_choice': 3,
-    'fact/technical': 3  # 允许组合epistemic lever + alignment lever
+    'fact/technical': 3  # allows combining epistemic lever + alignment lever
 }
 
 
 def _softmax_sample(scores_dict: Dict[str, float], k: int, temperature: float = 1.0,
                      rng: random.Random = None) -> List[Tuple[str, float]]:
     """
-    Softmax 采样: 从 scores_dict 中按概率采样 k 个 lever (不重复).
+    Softmax sampling: sample k levers (without replacement) from scores_dict by probability.
 
-    temperature 控制随机性:
-    - temperature → 0: 退化为 argmax (完全确定性)
-    - temperature = 1.0: 标准 softmax
-    - temperature > 1.0: 更平均 (更随机)
+    temperature controls randomness:
+    - temperature -> 0: degenerates to argmax (fully deterministic)
+    - temperature = 1.0: standard softmax
+    - temperature > 1.0: more uniform (more random)
     """
     if rng is None:
         rng = random.Random()
@@ -114,9 +115,9 @@ def select_levers(scout_result: Dict[str, Any],
     allowing exploration of diverse lever combinations across different questions.
 
     Args:
-        scout_result: Scout识别结果
-        base_weights: 基础权重字典
-        min_score: 最小分数阈值 (levers below this get reduced probability)
+        scout_result: Scout identification result
+        base_weights: base weight dictionary
+        min_score: minimum score threshold (levers below this get reduced probability)
 
     Returns:
         {
@@ -137,7 +138,7 @@ def select_levers(scout_result: Dict[str, Any],
         print(f"\n[SELECTOR] Starting selection for {main_type}")
     print(f"[SELECTOR] Scout scores: {lever_scores}")
 
-    # 1. 计算最终分数: final_score = lever_score × weight
+    # 1. Compute final scores: final_score = lever_score x weight
     final_scores = {}
     for lever, scout_score in lever_scores.items():
         if lever in effective_weights:
@@ -145,14 +146,14 @@ def select_levers(scout_result: Dict[str, Any],
             final_scores[lever] = final_score
             print(f"[SELECTOR] {lever}: {scout_score:.2f} × {effective_weights[lever]:.2f} = {final_score:.2f}")
 
-    # 2. Softmax 采样参数
-    # SELECTOR_TEMPERATURE 控制随机性: 低=更确定性, 高=更随机
+    # 2. Softmax sampling parameters
+    # SELECTOR_TEMPERATURE controls randomness: low = more deterministic, high = more random
     selector_temp = float(os.environ.get('SELECTOR_TEMPERATURE', '0.35'))
-    # 使用 random_seed 保证同一 sample 在同一 run 内可复现
+    # Use random_seed to ensure reproducibility for the same sample within the same run
     seed = scout_result.get('_selector_seed', 42)
     rng = random.Random(seed)
 
-    # 3. 为 softmax 准备分数 (给零分 lever 一个小的基础分数以保持采样可能性)
+    # 3. Prepare scores for softmax (give zero-score levers a small base score to maintain sampling possibility)
     sampling_scores = {}
     for lever, score in final_scores.items():
         if score >= min_score:
@@ -164,15 +165,15 @@ def select_levers(scout_result: Dict[str, Any],
             # Zero score: minimal chance (exploration floor)
             sampling_scores[lever] = 0.02
 
-    # 4. 应用tactics budget
+    # 4. Apply tactics budget
     k = TACTICS_BUDGET.get(main_type, 2)
 
-    # 5. Softmax 采样选择
+    # 5. Softmax sampling selection
     selected_levers = _softmax_sample(sampling_scores, k, temperature=selector_temp, rng=rng)
 
     print(f"[SELECTOR] Softmax sampled (temp={selector_temp}): {[(l, f'{s:.2f}') for l, s in selected_levers]}")
 
-    # 6. Clinical保底规则（仅对clinical_choice题）
+    # 6. Clinical fallback rule (only for clinical_choice questions)
     # Epistemic levers should NOT dominate clinical questions
     if main_type == 'clinical_choice' and len(selected_levers) > 0:
         selected_names = {lever for lever, _ in selected_levers}
@@ -193,13 +194,13 @@ def select_levers(scout_result: Dict[str, Any],
                                   f"with {replacement[0][0]}")
                             break
 
-    # 7. 边界情况：如果没有杠杆被选中
+    # 7. Edge case: if no levers were selected
     if len(selected_levers) == 0:
         sorted_levers = sorted(final_scores.items(), key=lambda x: x[1], reverse=True)
         print(f"[SELECTOR] Warning: No levers selected, using top-1")
         selected_levers = [sorted_levers[0]]
 
-    # 8. 提取选中levers的rationales
+    # 8. Extract rationales for selected levers
     selected_lever_names = [lever for lever, score in selected_levers]
     scout_rationales = scout_result.get('selected_levers_rationale', {})
 
@@ -211,7 +212,7 @@ def select_levers(scout_result: Dict[str, Any],
             rationales[lever] = f"The {lever} dimension is relevant to this question."
             print(f"[SELECTOR] Warning: No rationale provided for {lever}, using default")
 
-    # 9. 传递key_entities
+    # 9. Pass through key_entities
     key_entities = scout_result.get('key_entities', [])
     if not key_entities:
         print(f"[SELECTOR] Warning: No key_entities provided by Scout")

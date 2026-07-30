@@ -1,11 +1,11 @@
-"""V8 Pipeline Cache Manager — cache Scout 和 Builder result"""
+"""PRISM Pipeline Cache Manager — cache Scout and Builder results"""
 
 import json
 import os
 from typing import Dict, Optional
 
 
-class V8CacheManager:
+class PRISMCacheManager:
     def __init__(self, cache_file: str):
         self.cache_file = cache_file
         self.cache = self._load()

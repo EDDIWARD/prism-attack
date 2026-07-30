@@ -201,10 +201,7 @@ class ProfessionalLaw:
     def __init__(self, dataset_name='professional_law', n_samples=50, data_dir='data'):
         self.dataset_name = dataset_name
         self.data_path = f'{data_dir}/mmlu_professional_law'
-        if n_samples > 50:
-            self.data_file = self.data_path + '/sample_100.json'
-        else:
-            self.data_file = self.data_path + '/sample_50.json'
+        self.data_file = self.data_path + '/test.json'
         self.data = None
         self.n_samples = n_samples
         self.selected_data = None

@@ -1,0 +1,27 @@
+{
+  "attack_mode": "prism",
+  "use_prism_hybrid": true,
+  "scout_version": "10lever",
+  "builder_prompt_version": "current",
+  "scout_best_of_n": 2,
+  "prism_scout_model": "gpt-4o",
+  "prism_builder_model": "gpt-4o",
+  "use_cached_scout": false,
+  "use_cached_builder": false,
+  "disable_trap_generation": true,
+  "dataset_name": "medmcqa",
+  "num_samples": 100,
+  "start_from": 0,
+  "max_rounds": 6,
+  "model_name": "gpt-4o",
+  "output_dir": "results/defense_d4",
+  "save_summary": true,
+  "save_logs": true,
+  "random_seed": 42,
+  "enable_judge_defense": true,
+  "judge_defense_variant": "d4",
+  "debater_api": {
+    "api_key": "YOUR_API_KEY",
+    "base_url": "https://api.openai.com/v1"
+  }
+}

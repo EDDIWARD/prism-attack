@@ -1,6 +1,6 @@
 # PRISM: Defeating Search-Augmented Multi-Agent Debate via Factual Persuasion
 
-Official implementation of "When Facts Mislead: Defeating Search-Augmented Multi-Agent Debate via Factual Persuasion"
+Official implementation of "When Facts Mislead: Defeating Search-Augmented Multi-Agent Debate via Factual Persuasion" (ICICS 2026).
 
 ## Overview
 
@@ -13,22 +13,14 @@ PRISM is a three-stage attack framework that defeats search-augmented multi-agen
 ## Key Results
 
 - **GPT-4o**: PRISM achieves a 29.3% targeted attack success rate vs 14.7% for BoN-16 baseline (+14.6pp)
-- **Cross-model transfer**: PRISM consistently outperforms BoN-16 across all tested models
-- **Llama 3.3 70B**: Most vulnerable (57% ASR)
-- **Qwen3-Max**: Most robust (25% ASR)
-- **Claude Sonnet 4.5**: Highest sensitivity to PRISM (+19pp improvement)
+- **Professional Law**: 44.0% vs 28.7% for BoN-16 (+15.3pp)
+- **Participant-model transfer**: with Scout/Builder kept on GPT-4o, PRISM exceeds BoN-16 when all three debate agents run on Claude Sonnet 4.5 (34.0% vs 20.0%) and Kimi-K2 (46.3% vs 38.0%)
+- **Defense**: the strongest post-debate judge variant reduces PRISM only to 21.7%, still above undefended BoN-16
 
 ## Installation
 
-**Note:** During the review period, this repository is hosted anonymously. Please download as ZIP:
-
-1. Visit: https://github.com/EDDIWARD/prism-attack
-2. Click "Download ZIP" button
-3. Extract the archive
-
-Then install dependencies:
-
 ```bash
+git clone https://github.com/EDDIWARD/prism-attack.git
 cd prism-attack
 pip install -r requirements.txt
 ```
@@ -192,9 +184,11 @@ For Tavily search:
 export TAVILY_API_KEY="your_tavily_key"
 ```
 
-## Defense Experiments (RQ6)
+## Defense Experiments (RQ3)
 
 We provide three post-debate judge defense variants to evaluate PRISM's resilience against defensive mechanisms. All defenses are **attack-agnostic** (no manipulation warnings) and **search-augmented** (up to 3 search rounds).
+
+**Naming note:** the config values `d2`/`d3`/`d4` correspond to the defenses reported as **D1**/**D2**/**D3** in the paper. The config identifiers are kept for backward compatibility with existing result directories.
 
 ### Defense Variants
 
@@ -223,7 +217,7 @@ You can also enable defense via CLI:
 python bon_experiment.py --config configs/example_prism.json --enable-defense --defense-variant d2
 ```
 
-### Reproducing Defense Results (RQ6)
+### Reproducing Defense Results (RQ3)
 
 To reproduce the 3-run defense results reported in the paper:
 
@@ -289,15 +283,17 @@ This code is provided for academic research and defense development only:
 If you use this code in your research, please cite:
 
 ```bibtex
-@article{prism2026,
+@inproceedings{zhang2026prism,
   title={When Facts Mislead: Defeating Search-Augmented Multi-Agent Debate via Factual Persuasion},
-  author={Anonymous Authors},
-  journal={Under Review},
+  author={Zhang, Enhua and Chang, Yan},
+  booktitle={Proceedings of the 28th International Conference on Information and Communications Security (ICICS)},
+  series={Lecture Notes in Computer Science},
+  publisher={Springer},
   year={2026}
 }
 ```
 
-*Note: Citation information will be updated upon publication.*
+*Note: Volume and page numbers will be added once the proceedings are published.*
 
 ## License
 

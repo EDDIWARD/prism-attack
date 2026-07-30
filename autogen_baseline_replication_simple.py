@@ -410,7 +410,7 @@ def main(args):
     except Exception as e:
         print(f"[CONFIG] Could not load OAI_CONFIG_LIST.json: {e}")
         api_key = os.environ.get("OPENAI_API_KEY")
-        api_base = os.environ.get("OPENAI_API_BASE", "https://yunai.chat/v1")
+        api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
         if api_key:
             config_list = [{"model": "gpt-4o", "api_key": api_key, "base_url": api_base}]
             print("[CONFIG] Created config from environment")

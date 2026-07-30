@@ -5,7 +5,7 @@ Search Tools - Tavily API Wrapper for Web Search
 This module provides a search_web function that integrates with Tavily API
 to fetch real web search results for the multi-agent debate system.
 
-Design principles (from 权威陷阱实验方案.md):
+Design principles:
 - Returns top 3-5 results (default: 3)
 - Truncates content to ~300 chars per result
 - Provides clear formatting with [Search Note] header
@@ -70,7 +70,11 @@ def search_web(
 
     # Get API key
     if api_key is None:
-        api_key = os.environ.get("TAVILY_API_KEY", "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")
+        api_key = os.environ.get("TAVILY_API_KEY")
+        if not api_key:
+            raise ValueError("TAVILY_API_KEY environment variable not set. "
+                           "Get a key at https://tavily.com and set it: "
+                           "export TAVILY_API_KEY='tvly-...'")
 
     # Log the search call
     log_entry = {
