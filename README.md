@@ -22,7 +22,7 @@ PRISM is a three-stage attack framework that defeats search-augmented multi-agen
 
 **Note:** During the review period, this repository is hosted anonymously. Please download as ZIP:
 
-1. Visit: https://anonymous.4open.science/r/prism-attack/
+1. Visit: https://github.com/EDDIWARD/prism-attack
 2. Click "Download ZIP" button
 3. Extract the archive
 
